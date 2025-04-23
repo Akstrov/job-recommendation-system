@@ -8,6 +8,7 @@ from app.vectorizer import JobVectorizer
 from app.recommender import JobRecommender
 from app.logger import setup_logger
 from app.candidate_recommender import CandidateRecommender
+from app.utils import get_models_path
 
 # Setup logger
 logger = setup_logger()
@@ -17,7 +18,8 @@ models.Base.metadata.create_all(bind=engine)
 
 # Initialize vectorizer and recommender
 vectorizer = JobVectorizer()
-vectorizer.load_vectorizer('d:/studies/AI/job_recommendation_system/models/job_vectorizer.pkl')
+# Update any vectorizer loading
+vectorizer.load_vectorizer(get_models_path('job_vectorizer.pkl'))
 recommender = JobRecommender(vectorizer)
 
 app = FastAPI(

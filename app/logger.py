@@ -1,10 +1,11 @@
 import logging
 from logging.handlers import RotatingFileHandler
+from app.utils import get_project_root
 import os
 
 def setup_logger():
     # Create logs directory if it doesn't exist
-    log_dir = 'd:/studies/AI/job_recommendation_system/logs'
+    log_dir = os.path.join(get_project_root(), 'logs')
     os.makedirs(log_dir, exist_ok=True)
     
     # Configure logger
@@ -13,7 +14,7 @@ def setup_logger():
     
     # Create rotating file handler
     file_handler = RotatingFileHandler(
-        f'{log_dir}/app.log',
+        os.path.join(log_dir, 'app.log'),
         maxBytes=10000000,  # 10MB
         backupCount=5
     )

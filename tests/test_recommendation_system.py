@@ -4,37 +4,18 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.vectorizer import JobVectorizer
 from app.recommender import JobRecommender
-from dataclasses import dataclass
+from tests.utils.models import MockUser, MockJob
+from app.utils import get_models_path
 
-@dataclass
-class TestUser:
-    skills: list
-    education: list
-    experience: float
-    location: str
-    remote_ok: bool
-
-@dataclass
-class TestJob:
-    title: str
-    description: str
-    required_skills: list
-    required_education: str
-    required_experience: float
-    location: str
-    remote_ok: bool
-
-def main():
-    # 1. Load the trained vectorizer
-    print("Loading vectorizer...")
+def test_recommendation_system():
     vectorizer = JobVectorizer()
-    vectorizer.load_vectorizer('d:/studies/AI/job_recommendation_system/models/job_vectorizer.pkl')
+    vectorizer.load_vectorizer(get_models_path('job_vectorizer.pkl'))
     
     # 2. Initialize recommender
     recommender = JobRecommender(vectorizer)
     
     # 3. Create test data
-    test_user = TestUser(
+    test_user = MockUser(
         skills=['python', 'machine learning', 'sql', 'deep learning'],
         education=['bachelor, Computer Science', 'master, AI'],
         experience=3.5,
@@ -43,7 +24,7 @@ def main():
     )
     
     test_jobs = [
-        TestJob(
+        MockJob(
             title="Senior Data Scientist",
             description="Looking for an ML expert with Python and deep learning experience",
             required_skills=['python', 'machine learning', 'deep learning'],
@@ -52,7 +33,7 @@ def main():
             location="New York, USA",
             remote_ok=True
         ),
-        TestJob(
+        MockJob(  # Changed from TestJob
             title="Python Developer",
             description="Backend developer with SQL and Python experience needed",
             required_skills=['python', 'sql', 'django'],
@@ -61,7 +42,7 @@ def main():
             location="San Francisco, USA",
             remote_ok=False
         ),
-        TestJob(
+        MockJob(  # Changed from TestJob
             title="ML Engineer",
             description="AI startup seeking ML engineer with deep learning expertise",
             required_skills=['python', 'machine learning', 'tensorflow'],
@@ -73,19 +54,15 @@ def main():
     ]
     
     # 4. Get recommendations
-    print("\nGetting recommendations for user...")
     recommendations = recommender.get_recommendations(test_user, test_jobs)
     
-    # 5. Display results
-    print("\nTop recommendations:")
-    for job, overall_score, similarity_score in recommendations:
-        print(f"\nJob: {job.title}")
-        print(f"Overall Match Score: {overall_score:.4f}")
-        print(f"Content Similarity: {similarity_score:.4f}")
-        print(f"Location: {job.location}")
-        print(f"Required Experience: {job.required_experience} years")
-        print(f"Required Education: {job.required_education}")
-        print(f"Remote OK: {job.remote_ok}")
+    # 5. Assertions
+    assert len(recommendations) > 0
+    assert all(isinstance(score, float) for _, score, _ in recommendations)
+    assert all(score <= 1.0 for _, score, _ in recommendations)
+    # Check if scores are in descending order
+    scores = [score for _, score, _ in recommendations]
+    assert all(scores[i] >= scores[i+1] for i in range(len(scores)-1))
 
 if __name__ == "__main__":
-    main()
+    test_recommendation_system()

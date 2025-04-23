@@ -38,105 +38,129 @@ def test_health_check():
 # Update the setup_database fixture to add more test users
 @pytest.fixture(autouse=True)
 def setup_database():
+    # Drop all tables first
+    Base.metadata.drop_all(bind=engine)
+    # Create fresh tables
     Base.metadata.create_all(bind=engine)
     
     db = TestingSessionLocal()
-    
-    # Create test users with various profiles
-    test_users = [
-        User(
-            id=1,
-            skills=['python', 'machine learning'],
-            experience=3.0,
-            education=['bachelor, Computer Science'],
-            location='New York',
-            remote_ok=True
-        ),
-        User(
-            id=2,
-            skills=['python', 'django', 'fastapi'],
-            experience=5.0,
-            education=['master, Computer Science'],
-            location='Boston',
-            remote_ok=True
-        ),
-        User(
-            id=3,
-            skills=['java', 'spring'],
-            experience=4.0,
-            education=['bachelor, Software Engineering'],
-            location='Remote',
-            remote_ok=True
-        ),
-        User(
-            id=4,
-            skills=['python', 'machine learning', 'tensorflow', 'deep learning'],
-            experience=6.0,
-            education=['phd, Computer Science'],
-            location='New York',
-            remote_ok=False
-        ),
-        User(
-            id=5,
-            skills=['python', 'django', 'javascript'],
-            experience=2.0,
-            education=['associate, Web Development'],
-            location='Remote',
-            remote_ok=True
-        )
-    ]
-    
-    # Create test jobs (existing code remains the same)
-    test_jobs = [
-        Job(
-            id=1,
-            title='Python Developer',
-            description='Looking for a Python expert',
-            required_skills=['python', 'django'],
-            required_experience=2.0,
-            required_education='bachelor',
-            location='New York',
-            remote_ok=True
-        ),
-        Job(
-            id=2,
-            title='Data Scientist',
-            description='ML expert needed',
-            required_skills=['python', 'machine learning'],
-            required_experience=3.0,
-            required_education='master',
-            location='Remote',
-            remote_ok=True
-        ),
-        Job(
-            id=3,
-            title='Python Engineer',
-            description='Python backend developer needed',
-            required_skills=['python', 'fastapi'],
-            required_experience=2.0,
-            required_education='bachelor',
-            location='Remote',
-            remote_ok=True
-        ),
-        Job(
-            id=4,
-            title='ML Engineer',
-            description='Python and ML expert needed',
-            required_skills=['python', 'machine learning', 'tensorflow'],
-            required_experience=4.0,
-            required_education='master',
-            location='New York',
-            remote_ok=False
-        )
-    ]
-    
-    db.add_all(test_users)
-    db.add_all(test_jobs)
-    db.commit()
+    try:
+        # Clear existing data
+        db.query(Job).delete()
+        db.query(User).delete()
+        db.commit()
+        
+        # Create test users with various profiles
+        test_users = [
+            User(
+                id=1,
+                skills=['python', 'machine learning'],
+                experience=3.0,
+                education=['bachelor, Computer Science'],
+                location='New York',
+                remote_ok=True
+            ),
+            User(
+                id=2,
+                skills=['python', 'django', 'fastapi'],
+                experience=5.0,
+                education=['master, Computer Science'],
+                location='Boston',
+                remote_ok=True
+            ),
+            User(
+                id=3,
+                skills=['java', 'spring'],
+                experience=4.0,
+                education=['bachelor, Software Engineering'],
+                location='Remote',
+                remote_ok=True
+            ),
+            User(
+                id=4,
+                skills=['python', 'machine learning', 'tensorflow', 'deep learning'],
+                experience=6.0,
+                education=['phd, Computer Science'],
+                location='New York',
+                remote_ok=False
+            ),
+            User(
+                id=5,
+                skills=['python', 'django', 'javascript'],
+                experience=2.0,
+                education=['associate, Web Development'],
+                location='Remote',
+                remote_ok=True
+            )
+        ]
+        
+        # Create test jobs
+        test_jobs = [
+            Job(
+                id=1,
+                title='Python Developer',
+                description='Looking for a Python expert',
+                required_skills=['python', 'django'],
+                required_experience=2.0,
+                required_education='bachelor',
+                location='New York',
+                remote_ok=True
+            ),
+            Job(
+                id=2,
+                title='Data Scientist',
+                description='ML expert needed',
+                required_skills=['python', 'machine learning'],
+                required_experience=3.0,
+                required_education='master',
+                location='Remote',
+                remote_ok=True
+            ),
+            Job(
+                id=3,
+                title='Python Engineer',
+                description='Python backend developer needed',
+                required_skills=['python', 'fastapi'],
+                required_experience=2.0,
+                required_education='bachelor',
+                location='Remote',
+                remote_ok=True
+            ),
+            Job(
+                id=4,
+                title='ML Engineer',
+                description='Python and ML expert needed',
+                required_skills=['python', 'machine learning', 'tensorflow'],
+                required_experience=4.0,
+                required_education='master',
+                location='New York',
+                remote_ok=False
+            )
+        ]
+        
+        # Add to database
+        db.add_all(test_users)
+        db.commit()
+        
+        db.add_all(test_jobs)
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
+        raise e
+    finally:
+        db.close()
     
     yield
     
-    Base.metadata.drop_all(bind=engine)
+    # Cleanup after tests
+    db = TestingSessionLocal()
+    try:
+        db.query(Job).delete()
+        db.query(User).delete()
+        db.commit()
+    finally:
+        db.close()
 
 # Add helper function for job fixture
 @pytest.fixture

@@ -4,10 +4,11 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.vectorizer import JobVectorizer
+from app.utils import get_data_path, get_models_path
 
 def train_vectorizer():
     # Load the LinkedIn jobs dataset
-    df = pd.read_csv('d:/studies/AI/job_recommendation_system/data/linkedin_jobs.csv')
+    df = pd.read_csv(get_data_path('linkedin_jobs.csv'))
     
     # Select relevant columns and clean data
     df_clean = df[['title', 'description']].dropna(subset=['description'])
@@ -36,9 +37,7 @@ def train_vectorizer():
     vectorizer.fit(mock_jobs)
     
     # Save the trained vectorizer
-    model_path = 'd:/studies/AI/job_recommendation_system/models/job_vectorizer.pkl'
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    vectorizer.save_vectorizer(model_path)
+    vectorizer.save_vectorizer(get_models_path('job_vectorizer.pkl'))
     print(f"Vectorizer trained and saved to {model_path}")
 
 if __name__ == "__main__":

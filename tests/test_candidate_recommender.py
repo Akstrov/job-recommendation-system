@@ -3,11 +3,12 @@ import numpy as np
 from app.candidate_recommender import CandidateRecommender
 from app.vectorizer import JobVectorizer
 from app.models import User, Job
+from app.utils import get_models_path
 
 @pytest.fixture
 def vectorizer():
     vectorizer = JobVectorizer()
-    vectorizer.load_vectorizer('d:/studies/AI/job_recommendation_system/models/job_vectorizer.pkl')
+    vectorizer.load_vectorizer(get_models_path('job_vectorizer.pkl'))
     return vectorizer
 
 @pytest.fixture
